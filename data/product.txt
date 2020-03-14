@@ -1,0 +1,16 @@
+# productID,productName,price,quantityInStock
+1,powerful keyword,20.00,5
+2,super mouse,25.99,40
+3,a gorgeous book,99.99,113
+4,macbook pro,1799.99, 52
+5,iphone 11,899.98,44
+6,calculator,23.33,90
+7,speaker,52.00,100
+8,cigeratte,7.68,1130
+9,budlight,5.99,44220
+10,display,349.59,332
+11,poker chips,78.99,15
+12,tissue,14.99,3
+13,mask,3.99,99
+14,coca cola, 1.49,88888
+15,vodka,29.99,4130
