@@ -103,6 +103,7 @@ public class MySQLConnection {
                             // More constraints may apply
                     + ")";
             statement.executeUpdate(sql);
+            System.out.print("Import done successfully");
 
         } catch (SQLException e) {
             e.printStackTrace();
