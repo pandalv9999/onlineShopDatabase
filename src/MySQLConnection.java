@@ -1,7 +1,4 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class MySQLConnection {
 
@@ -108,5 +105,59 @@ public class MySQLConnection {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+    }
+
+    public void populateData() {
+        if (conn == null) {
+            System.err.println("DataBase connection failed");
+        }
+
+        String sql = "INSERT INTO ShippingAddress VALUES (?,?,?,?,?,?)";
+        try {
+            PreparedStatement statement = conn.prepareStatement(sql);
+            DataReader reader = new DataReader("data/product.txt");
+            String line;
+            while ((line = reader.readLines()) != null) {
+                String[] data = line.split(",");
+                try {
+                    statement.setInt(1, Integer.parseInt(data[0]));
+                    statement.setString(2, data[1]);
+                    statement.setString(3, data[2]);
+                    statement.setString(4, data[3]);
+                    statement.setString(5, data[4]);
+                    statement.setString(6, data[5]);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        String sql = "INSERT INTO BillingAddress VALUES (?,?,?,?,?,?)";
+        try {
+            PreparedStatement statement = conn.prepareStatement(sql);
+            DataReader reader = new DataReader("data/product.txt");
+            String line;
+            while ((line = reader.readLines()) != null) {
+                String[] data = line.split(",");
+                try {
+                    statement.setInt(1, Integer.parseInt(data[0]));
+                    statement.setString(2, data[1]);
+                    statement.setString(3, data[2]);
+                    statement.setString(4, data[3]);
+                    statement.setString(5, data[4]);
+                    statement.setString(6, data[5]);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 }
