@@ -1,0 +1,16 @@
+# id,address,city,state,zip,country
+1,1 Marlborough Court,East Haven,CT,06512,USA
+2,482 Rockwell Ave,Paterson,NJ,07501,USA
+3,49 Wilson Road,Clover,SC,29710,USA
+4,8551 Smith Store Street,District Heights,MD,20747,USA
+5,155 Linda Street,Loganville,GA,30052,USA
+6,7197 Oak Street,Bemidji,MN,56601,USA
+7,528 Gonzales Ave.,Flemington,NJ,08822,USA
+8,905 SW. Homestead Street,Nutley,NJ,07110,USA
+9,736 West Union Street,Ravenna,OH,44266,USA
+10,933 Academy St.,West Springfield,MA,01089,USA
+11,410 Big Rock Cove Street,Rosedale,NY,11422,USA
+12,530 Rosewood Drive,Hopewell,VA,23860,USA
+13,252 Smith Store Ave.,Morrisville,PA,19067,USA
+14,963 Deerfield Dr.,Marquette,MI,49855,USA
+15,466 Young Street,West Hempstead,NY,11552,USA

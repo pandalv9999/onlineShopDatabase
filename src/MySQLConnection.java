@@ -99,6 +99,9 @@ public class MySQLConnection {
                     + "FOREIGN KEY (cartID) REFERENCES PurchaseCart(cartID)"
                             // More constraints may apply
                     + ")";
+
+            // cart
+
             statement.executeUpdate(sql);
             System.out.print("Import done successfully");
 
@@ -116,7 +119,7 @@ public class MySQLConnection {
         String sql = "INSERT INTO ShippingAddress VALUES (?,?,?,?,?,?)";
         try {
             PreparedStatement statement = conn.prepareStatement(sql);
-            DataReader reader = new DataReader("data/product.txt");
+            DataReader reader = new DataReader("data/shippingAddress.txt");
             String line;
             while ((line = reader.readLines()) != null) {
                 String[] data = line.split(",");
@@ -130,13 +133,36 @@ public class MySQLConnection {
                 } catch (ArrayIndexOutOfBoundsException e) {
                     e.printStackTrace();
                 }
-
+                statement.executeUpdate();
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        String sql = "INSERT INTO BillingAddress VALUES (?,?,?,?,?,?)";
+        sql = "INSERT INTO BillingAddress VALUES (?,?,?,?,?,?)";
+        try {
+            PreparedStatement statement = conn.prepareStatement(sql);
+            DataReader reader = new DataReader("data/billingAddress.txt");
+            String line;
+            while ((line = reader.readLines()) != null) {
+                String[] data = line.split(",");
+                try {
+                    statement.setInt(1, Integer.parseInt(data[0]));
+                    statement.setString(2, data[1]);
+                    statement.setString(3, data[2]);
+                    statement.setString(4, data[3]);
+                    statement.setString(5, data[4]);
+                    statement.setString(6, data[5]);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    e.printStackTrace();
+                }
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        sql = "INSERT INTO Product VALUES (?,?,?,?)";
         try {
             PreparedStatement statement = conn.prepareStatement(sql);
             DataReader reader = new DataReader("data/product.txt");
@@ -146,18 +172,39 @@ public class MySQLConnection {
                 try {
                     statement.setInt(1, Integer.parseInt(data[0]));
                     statement.setString(2, data[1]);
-                    statement.setString(3, data[2]);
-                    statement.setString(4, data[3]);
-                    statement.setString(5, data[4]);
-                    statement.setString(6, data[5]);
+                    statement.setFloat(3, Float.parseFloat(data[2]));
+                    statement.setInt(4, Integer.parseInt(data[3]));
                 } catch (ArrayIndexOutOfBoundsException e) {
                     e.printStackTrace();
                 }
-
+                statement.executeUpdate();
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        sql = "INSERT INTO Orders VALUES (?,?,?,?)";
+        try {
+            PreparedStatement statement = conn.prepareStatement(sql);
+            DataReader reader = new DataReader("data/product.txt");
+            String line;
+            while ((line = reader.readLines()) != null) {
+                String[] data = line.split(",");
+                try {
+                    statement.setInt(1, Integer.parseInt(data[0]));
+                    statement.setInt(2, Integer.parseInt(data[1]));
+                    statement.setInt(3, Integer.parseInt(data[2]));
+                    statement.setInt(4, Integer.parseInt(data[3]));
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    e.printStackTrace();
+                }
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // other tables
 
     }
 }
