@@ -8,7 +8,8 @@ public class MySQLConnection {
 
     public MySQLConnection() {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver").getConstructor().newInstance();
+            Class.forName("com.mysql.jdbc.Driver").getConstructor().newInstance();
+            //Class.forName("com.mysql.cj.jdbc.Driver").getConstructor().newInstance();
             conn = DriverManager.getConnection(DataBaseUtil.URL);
 
         } catch (Exception e) {
@@ -33,13 +34,16 @@ public class MySQLConnection {
             sql = "DROP TABLE IF EXISTS ShippingAddress";
             statement.executeUpdate(sql);
 
-            sql = "DROP TABLE IF EXISTS PurchaseCart";
+            sql = "DROP TABLE IF EXISTS Cart";
             statement.executeUpdate(sql);
 
             sql = "DROP TABLE IF EXISTS Product";
             statement.executeUpdate(sql);
 
             sql = "DROP TABLE IF EXISTS Orders";
+            statement.executeUpdate(sql);
+
+            sql = "DROP TABLE IF EXISTS OrderHistory";
             statement.executeUpdate(sql);
 
             // create new tables
@@ -88,6 +92,15 @@ public class MySQLConnection {
                     // More constraint may apply
                     + ")";
 
+            sql = "CREATE TABLE Cart ("
+                    + "cartID INTEGER, "
+                    + "productID INTEGER, "
+                    + "quantity INTEGER, "
+                    + "PRIMARY KEY (cartID, productID)"
+                    + ")";
+
+            statement.executeUpdate(sql);
+
             sql = "CREATE TABLE Customer ("
                     + "customerID INTEGER PRIMARY KEY, "
                     + "email VARCHAR(30) NOT NULL, "
@@ -101,17 +114,17 @@ public class MySQLConnection {
                             // More constraints may apply
                     + "FOREIGN KEY (billingID) REFERENCES BillingAddress(billingID), "
                             // More constraints may apply
-                    + "FOREIGN KEY (cartID) REFERENCES PurchaseCart(cartID)"
+                    + "FOREIGN KEY (cartID) REFERENCES Cart(cartID)"
                             // More constraints may apply
                     + ")";
 
             statement.executeUpdate(sql);
 
-            sql = "CREATE TABLE Cart ("
-                    + "cartID INTEGER, "
-                    + "productID INTEGER, "
-                    + "quantity INTEGER, "
-                    + "PRIMARY KEY (cartID, productID)"
+            // we need another table to link customer with his orders.
+            sql = "CREATE TABLE OrderHistory ("
+                    + "customerID INTEGER,"
+                    + "OrderID INTEGER,"
+                    + "PRIMARY KEY (customerID, OrderID)"
                     + ")";
 
             statement.executeUpdate(sql);
@@ -134,6 +147,9 @@ public class MySQLConnection {
             DataReader reader = new DataReader("data/shippingAddress.txt");
             String line;
             while ((line = reader.readLines()) != null) {
+                if (line.startsWith("#")) {
+                    continue;
+                }
                 String[] data = line.split(",");
                 try {
                     statement.setInt(1, Integer.parseInt(data[0]));
@@ -157,6 +173,9 @@ public class MySQLConnection {
             DataReader reader = new DataReader("data/billingAddress.txt");
             String line;
             while ((line = reader.readLines()) != null) {
+                if (line.startsWith("#")) {
+                    continue;
+                }
                 String[] data = line.split(",");
                 try {
                     statement.setInt(1, Integer.parseInt(data[0]));
@@ -180,6 +199,9 @@ public class MySQLConnection {
             DataReader reader = new DataReader("data/product.txt");
             String line;
             while ((line = reader.readLines()) != null) {
+                if (line.startsWith("#")) {
+                    continue;
+                }
                 String[] data = line.split(",");
                 try {
                     statement.setInt(1, Integer.parseInt(data[0]));
@@ -201,12 +223,60 @@ public class MySQLConnection {
             DataReader reader = new DataReader("data/product.txt");
             String line;
             while ((line = reader.readLines()) != null) {
+                if (line.startsWith("#")) {
+                    continue;
+                }
                 String[] data = line.split(",");
                 try {
                     statement.setInt(1, Integer.parseInt(data[0]));
                     statement.setInt(2, Integer.parseInt(data[1]));
                     statement.setInt(3, Integer.parseInt(data[2]));
                     statement.setInt(4, Integer.parseInt(data[3]));
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    e.printStackTrace();
+                }
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        sql = "INSERT INTO Cart VALUES (?,?,?)";
+        try {
+            PreparedStatement statement = conn.prepareStatement(sql);
+            DataReader reader = new DataReader("data/Cart.txt");
+            String line;
+            while ((line = reader.readLines()) != null) {
+                if (line.startsWith("#")) {
+                    continue;
+                }
+                String[] data = line.split(",");
+                try {
+                    statement.setInt(1, Integer.parseInt(data[0]));
+                    statement.setInt(2, Integer.parseInt(data[1]));
+                    statement.setInt(3, Integer.parseInt(data[2]));
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    e.printStackTrace();
+                }
+                statement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        sql = "INSERT INTO OrderHistory VALUES (?,?)";
+        try {
+            PreparedStatement statement = conn.prepareStatement(sql);
+            DataReader reader = new DataReader("data/Cart.txt");
+            String line;
+            while ((line = reader.readLines()) != null) {
+                if (line.startsWith("#")) {
+                    continue;
+                }
+                String[] data = line.split(",");
+                try {
+                    statement.setInt(1, Integer.parseInt(data[0]));
+                    statement.setInt(2, Integer.parseInt(data[1]));
                 } catch (ArrayIndexOutOfBoundsException e) {
                     e.printStackTrace();
                 }
