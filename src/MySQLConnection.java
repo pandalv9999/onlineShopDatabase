@@ -86,7 +86,7 @@ public class MySQLConnection {
                     + "OrderDate DATE NOT NULL, "
                     + "quantity INTEGER NOT NULL,"
 
-                    + " KEY (orderID, productID), "
+                    + "PRIMARY KEY (orderID, productID), "
                     + "FOREIGN KEY (shippingID) REFERENCES ShippingAddress(shippingID), "
                         // More constraint may apply
                     + "FOREIGN KEY (billingID) REFERENCES BillingAddress(billingID)"
