@@ -82,9 +82,11 @@ public class MySQLConnection {
                     + "OrderDate DATE NOT NULL, "
 
                     + "PRIMARY KEY (orderID, productID), "
-                    + "FOREIGN KEY (shippingID) REFERENCES ShippingAddress(shippingID), "
+                    + "FOREIGN KEY (shippingID) REFERENCES ShippingAddress(shippingID)" +
+                    "       ON DELETE CASCADE, " // deleting a shippingID in ShippingAddress would delete all rows associated with the order
                         // More constraint may apply
-                    + "FOREIGN KEY (billingID) REFERENCES BillingAddress(billingID)"
+                    + "FOREIGN KEY (billingID) REFERENCES BillingAddress(billingID)" +
+                      "     ON DELETE CASCADE "  // deleting a billingID in BillingAddress would delete all rows associated with the order
                     // More constraint may apply
                     + ")";
 
@@ -225,8 +227,8 @@ public class MySQLConnection {
 
             //Top selling products, output top 10
             String topSellingProducts="CREATE VIEW topSellingProducts AS " +
-                    "SELECT SUM(PurchaseCart.quantity) AS totalQuantity, Order.ProductID, Product.name" +
-                    "FROM Order, PurchaseCart, Product" +
+                    "SELECT SUM(PurchaseCart.quantity) AS totalQuantity, Order.ProductID, Product.name " +
+                    "FROM Order, PurchaseCart, Product " +
                     "WHERE Order.ProductID=PurchaseCart.ProductID AND Order.ProductID=Product.ID " +
                     "GROUP BY Order.ProductID " +
                     "ORDER BY totalQuantities DESC; " ;
@@ -257,7 +259,7 @@ public class MySQLConnection {
 
             String productCertainDate="CREATE VIEW productCertainDate AS " +
                     "SELECT Order.ProductID, Product.name " +
-                    " FROM Order " +
+                    "FROM Order " +
                     "WHERE OrderDate = ? ;";
             PreparedStatement st= conn.prepareStatement(productCertainDate);
             st.setString(1, certainDate);
@@ -314,9 +316,38 @@ public class MySQLConnection {
                     System.out.print(" | ");
                 System.out.print(rs.getString(i) + "   |   ");
             }
-            System.out.println("");
+            System.out.println();
         }
-        System.out.println("");
+        System.out.println();
+    }
+
+
+//    public void createTriggers(){
+//        try{
+//            String orderDeleteTrigger = "CREATE trigger IF NOT EXISTS addOrderTrigger " +
+//                                        "AFTER DELETE ON Order " +
+//                                        "FOR EACH ROW " +
+//                                        "IF orderID IS NULL THEN " +
+//                                        "";
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    public void createTrigger(){
+        try{
+            String customerNameTrigger = "CREATE TRIGGER customerUpdateNameTrigger AFTER UPDATE ON Customer " +
+                                         "FOR EACH ROW " +
+                                         "BEGIN " +
+                                         "    IF NEW.firstName <> OLD.firstName OR NEW.lastName <> OLD.lastName OR " +
+                                         "       (NEW.firstName IS NULL) <> (OLD.firstName IS NULL) THEN " +
+                                         "        INSERT INTO customerChanges(, name) VALUES(NEW.id, NEW.name); " +
+                                         "    END IF; " +
+                                         "END;";
+        }catch (Exception e){
+            System.err.println(e.getMessage());
+        }
     }
 
 
