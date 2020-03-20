@@ -105,7 +105,14 @@ public class MySQLConnection {
                             // More constraints may apply
                     + ")";
 
-            // cart
+            statement.executeUpdate(sql);
+
+            sql = "CREATE TABLE Cart ("
+                    + "cartID INTEGER, "
+                    + "productID INTEGER, "
+                    + "quantity INTEGER, "
+                    + "PRIMARY KEY (cartID, productID)"
+                    + ")";
 
             statement.executeUpdate(sql);
             System.out.print("Import done successfully");
@@ -210,6 +217,7 @@ public class MySQLConnection {
         }
 
         // other tables
+
 
     }
     public void createViews() {
