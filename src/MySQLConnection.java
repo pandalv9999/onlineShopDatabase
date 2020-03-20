@@ -259,7 +259,7 @@ public class MySQLConnection {
         }
     }
 
-    private void displayViews() {
+    public void displayViews() {
         try{
             String view1="SELECT * FROM topSellingProducts " +
                     "LIMIT 10;";
