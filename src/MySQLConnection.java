@@ -93,6 +93,8 @@ public class MySQLConnection {
                     // More constraint may apply
                     + ")";
 
+            statement.executeUpdate(sql);
+
             sql = "CREATE TABLE Cart ("
                     + "cartID INTEGER, "
                     + "productID INTEGER, "
