@@ -1,8 +1,10 @@
 import java.sql.*;
+import java.util.Scanner;
 
 public class MySQLConnection {
 
     private Connection conn;
+    private Statement statement = null;
 
     public MySQLConnection() {
         try {
@@ -76,6 +78,9 @@ public class MySQLConnection {
                     //+ "customerID INTEGER NOT NULL, " // I do not think this is necessary?
                     + "shippingID INTEGER NOT NULL, "
                     + "billingID INTEGER NOT NULL, "
+                    //Add orderDate column for the convenience to create view.
+                    + "OrderDate DATE NOT NULL, "
+
                     + "PRIMARY KEY (orderID, productID), "
                     + "FOREIGN KEY (shippingID) REFERENCES ShippingAddress(shippingID), "
                         // More constraint may apply
@@ -207,4 +212,104 @@ public class MySQLConnection {
         // other tables
 
     }
+    public void createViews() {
+        try{
+
+            //Top selling products, output top 10
+            String topSellingProducts="CREATE VIEW topSellingProducts AS " +
+                    "SELECT SUM(PurchaseCart.quantity) AS totalQuantity, Order.ProductID, Product.name" +
+                    "FROM Order, PurchaseCart, Product" +
+                    "WHERE Order.ProductID=PurchaseCart.ProductID AND Order.ProductID=Product.ID " +
+                    "GROUP BY Order.ProductID " +
+                    "ORDER BY totalQuantities DESC; " ;
+            statement.executeUpdate(topSellingProducts);
+
+            //Top buyers
+            String topBuyer="CREATE VIEW topBuyer AS " +
+                    "SELECT COUNT(Customer.OrderID) AS totalOrder, Customer.name " +
+                    "FROM Customer, Order " +
+                    "WHERE Customer.OrderID = Order.OrderID " +
+                    "GROUP BY Customer.OrderID " +
+                    "Order BY totalOrder DESC; " ;
+            statement.executeUpdate(topBuyer);
+
+            //Order History (a customer can view the total price of product in shopping cart)
+            String orderHistory="CREATE VIEW orderHistory AS  " +
+                    "SELECT SUM(Product.price*PurchaseCart.quantity) AS totalPrice, Customer.name AS customerName, Customer.CustomerID " +
+                    "FROM Product, PurchaseCart, Customer " +
+                    "WHERE Product.ProductID=PurchaseCart.ProductID AND Customer.cartID=PurchaseCart.cartID " +
+                    "ORDER BY totalPrice DESC;";
+            statement.executeUpdate(orderHistory);
+
+
+            //Product sold on a particular date
+            Scanner input = new Scanner(System.in);
+            System.out.print("Enter a date (YYYY-MM-DD): ");
+            String certainDate = input.next();
+
+            String productCertainDate="CREATE VIEW productCertainDate AS " +
+                    "SELECT Order.ProductID, Product.name " +
+                    " FROM Order " +
+                    "WHERE OrderDate = ? ;";
+            PreparedStatement st= conn.prepareStatement(productCertainDate);
+            st.setString(1, certainDate);
+            statement.executeUpdate(productCertainDate);
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void displayViews() {
+        try{
+            String view1="SELECT * FROM topSellingProducts " +
+                    "LIMIT 10;";
+            System.out.println("1. Display top 10 selling products:");
+            ResultSet rs1 = statement.executeQuery(view1);
+            printResult(rs1);
+
+            String view2="SELECT * FROM topBuyer " +
+                    "LIMIT 10;";
+            System.out.println("2. Display top 10 buyers:");
+            ResultSet rs2 = statement.executeQuery(view2);
+            printResult(rs2);
+
+            String view3="SELECT * FROM orderHistory ;";
+            System.out.println("3: Order History (a customer can view the total price of product in shopping cart):");
+            ResultSet rs3 = statement.executeQuery(view3);
+            printResult(rs3);
+
+            String view4="SELECT * FROM productCertainDate ;";
+            System.out.println("4: Product sold on a particular date:");
+            ResultSet rs4 = statement.executeQuery(view4);
+            printResult(rs4);
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+    private void printResult(ResultSet rs) throws SQLException {
+        ResultSetMetaData metaData = rs.getMetaData();
+        int columnsNumber = metaData.getColumnCount();
+        System.out.println("-----------------");
+        for (int i = 1; i <= columnsNumber; i++) {
+            if (i == 1)
+                System.out.print(" | ");
+            System.out.print(metaData.getColumnName(i) + "   |   ");
+        }
+        System.out.println("\n-----------------");
+
+        while (rs.next()) {
+            for (int i = 1; i <= columnsNumber; i++) {
+                if (i == 1)
+                    System.out.print(" | ");
+                System.out.print(rs.getString(i) + "   |   ");
+            }
+            System.out.println("");
+        }
+        System.out.println("");
+    }
+
+
 }
