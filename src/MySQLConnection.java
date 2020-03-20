@@ -8,8 +8,8 @@ public class MySQLConnection {
 
     public MySQLConnection() {
         try {
-            Class.forName("com.mysql.jdbc.Driver").getConstructor().newInstance();
-            //Class.forName("com.mysql.cj.jdbc.Driver").getConstructor().newInstance();
+            //Class.forName("com.mysql.jdbc.Driver").getConstructor().newInstance();
+            Class.forName("com.mysql.cj.jdbc.Driver").getConstructor().newInstance();
             conn = DriverManager.getConnection(DataBaseUtil.URL);
 
         } catch (Exception e) {
@@ -84,8 +84,9 @@ public class MySQLConnection {
                     + "billingID INTEGER NOT NULL, "
                     //Add orderDate column for the convenience to create view.
                     + "OrderDate DATE NOT NULL, "
+                    + "quantity INTEGER NOT NULL,"
 
-                    + "PRIMARY KEY (orderID, productID), "
+                    + " KEY (orderID, productID), "
                     + "FOREIGN KEY (shippingID) REFERENCES ShippingAddress(shippingID), "
                         // More constraint may apply
                     + "FOREIGN KEY (billingID) REFERENCES BillingAddress(billingID)"
