@@ -41,12 +41,26 @@ public class MySQLConnection {
             sql = "DROP TABLE IF EXISTS ShippingAddress";
             statement.executeUpdate(sql);
 
-            sql = "DROP TABLE IF EXISTS Cart";
+            sql = "DROP TABLE IF EXISTS PurchaseCart";
             statement.executeUpdate(sql);
 
-
-
             sql = "DROP TABLE IF EXISTS OrderHistory";
+            statement.executeUpdate(sql);
+
+            // drop views
+            sql = "DROP VIEW IF EXISTS TopSelling";
+            statement.executeUpdate(sql);
+
+            sql = "DROP VIEW IF EXISTS TopBuyer";
+            statement.executeUpdate(sql);
+
+            sql = "DROP VIEW IF EXISTS OrderHistory";
+            statement.executeUpdate(sql);
+
+            sql = "DROP VIEW IF EXISTS ProductCertainDate";
+            statement.executeUpdate(sql);
+
+            sql = "DROP VIEW IF EXISTS CustomerCart";
             statement.executeUpdate(sql);
 
             // create new tables
@@ -73,7 +87,7 @@ public class MySQLConnection {
 
             sql = "CREATE TABLE Product("
                     + "productID INTEGER PRIMARY KEY, "
-                    + "productName VARCHAR(100) NOT NULL, "
+                    + "name VARCHAR(100) NOT NULL, "
                     + "price FLOAT NOT NULL, "
                     + "quantityInStock INTEGER NOT NULL "
                     + ")";
@@ -82,7 +96,7 @@ public class MySQLConnection {
             sql = "CREATE TABLE Orders ("
                     + "orderID INTEGER NOT NULL, "
                     + "productID INTEGER NOT NULL, "
-                    //+ "customerID INTEGER NOT NULL, " // I do not think this is necessary?
+                    + "customerID INTEGER NOT NULL, " // I do not think this is necessary?
                     + "shippingID INTEGER NOT NULL, "
                     + "billingID INTEGER NOT NULL, "
                     //Add orderDate column for the convenience to create view.
@@ -98,7 +112,7 @@ public class MySQLConnection {
 
             statement.executeUpdate(sql);
 
-            sql = "CREATE TABLE Cart ("
+            sql = "CREATE TABLE PurchaseCart ("
                     + "cartID INTEGER, "
                     + "productID INTEGER, "
                     + "quantity INTEGER, "
@@ -120,7 +134,7 @@ public class MySQLConnection {
                             // More constraints may apply
                     + "FOREIGN KEY (billingID) REFERENCES BillingAddress(billingID), "
                             // More constraints may apply
-                    + "FOREIGN KEY (cartID) REFERENCES Cart(cartID)"
+                    + "FOREIGN KEY (cartID) REFERENCES PurchaseCart(cartID)"
                             // More constraints may apply
                     + ")";
 
@@ -150,7 +164,7 @@ public class MySQLConnection {
         String sql = "INSERT INTO ShippingAddress VALUES (?,?,?,?,?,?)";
         try {
             PreparedStatement statement = conn.prepareStatement(sql);
-            DataReader reader = new DataReader("data/shippingAddress.txt");
+            DataReader reader = new DataReader("data/ShippingAddress.txt");
             String line;
             while ((line = reader.readLines()) != null) {
                 if (line.startsWith("#")) {
@@ -176,7 +190,7 @@ public class MySQLConnection {
         sql = "INSERT INTO BillingAddress VALUES (?,?,?,?,?,?)";
         try {
             PreparedStatement statement = conn.prepareStatement(sql);
-            DataReader reader = new DataReader("data/billingAddress.txt");
+            DataReader reader = new DataReader("data/BillingAddress.txt");
             String line;
             while ((line = reader.readLines()) != null) {
                 if (line.startsWith("#")) {
@@ -202,7 +216,7 @@ public class MySQLConnection {
         sql = "INSERT INTO Product VALUES (?,?,?,?)";
         try {
             PreparedStatement statement = conn.prepareStatement(sql);
-            DataReader reader = new DataReader("data/product.txt");
+            DataReader reader = new DataReader("data/Product.txt");
             String line;
             while ((line = reader.readLines()) != null) {
                 if (line.startsWith("#")) {
@@ -223,10 +237,10 @@ public class MySQLConnection {
             e.printStackTrace();
         }
 
-        sql = "INSERT INTO Cart VALUES (?,?,?)";
+        sql = "INSERT INTO PurchaseCart VALUES (?,?,?)";
         try {
             PreparedStatement statement = conn.prepareStatement(sql);
-            DataReader reader = new DataReader("data/Cart.txt");
+            DataReader reader = new DataReader("data/PurchaseCart.txt");
             String line;
             while ((line = reader.readLines()) != null) {
                 if (line.startsWith("#")) {
@@ -280,7 +294,7 @@ public class MySQLConnection {
         sql = "INSERT INTO OrderHistory VALUES (?,?)";
         try {
             PreparedStatement statement = conn.prepareStatement(sql);
-            DataReader reader = new DataReader("data/orderHistory.txt");
+            DataReader reader = new DataReader("data/OrderHistory.txt");
             String line;
             while ((line = reader.readLines()) != null) {
                 if (line.startsWith("#")) {
@@ -335,28 +349,28 @@ public class MySQLConnection {
         try{
             Statement statement = conn.createStatement();
             //Top selling products, output top 10
-            String topSellingProducts="CREATE VIEW topSellingProducts AS " +
-                    "SELECT SUM(PurchaseCart.quantity) AS totalQuantity, Order.ProductID, Product.name " +
-                    "FROM Order, PurchaseCart, Product " +
-                    "WHERE Order.ProductID = PurchaseCart.ProductID AND Order.ProductID = Product.ID " +
-                    "GROUP BY Order.ProductID " +
-                    "ORDER BY totalQuantities DESC; " ;
-            statement.executeUpdate(topSellingProducts);
+            String topSelling="CREATE VIEW TopSelling AS " +
+                    "SELECT SUM(PurchaseCart.quantity) AS totalQuantity, Orders.productID, Product.name " +
+                    "FROM Orders, PurchaseCart, Product " +
+                    "WHERE Orders.productID = PurchaseCart.productID AND Orders.productID = Product.productID " +
+                    "GROUP BY Orders.productID " +
+                    "ORDER BY totalQuantity DESC; " ;
+            statement.executeUpdate(topSelling);
 
             //Top buyers
-            String topBuyer="CREATE VIEW topBuyer AS " +
-                    "SELECT COUNT(Customer.orderID) AS totalOrder, Customer.name " +
-                    "FROM Customer, Order " +
-                    "WHERE Customer.orderID = Order.orderID " +
-                    "GROUP BY Customer.orderID " +
+            String topBuyer="CREATE VIEW TopBuyer AS " +
+                    "SELECT COUNT(Orders.orderID) AS totalOrder, Customer.firstName, Customer.lastName " +
+                    "FROM Customer, Orders " +
+                    "WHERE Customer.customerID = Orders.customerID " +
+                    "GROUP BY Customer.customerID " +
                     "Order BY totalOrder DESC; " ;
             statement.executeUpdate(topBuyer);
 
             //Order History (a customer can view the total price of product in shopping cart)
-            String orderHistory="CREATE VIEW orderHistory AS  " +
+            String orderHistory="CREATE VIEW OrderHistory AS  " +
                     "SELECT SUM(Product.price*PurchaseCart.quantity) AS totalPrice, Customer.name AS customerName, Customer.CustomerID " +
                     "FROM Product, PurchaseCart, Customer " +
-                    "WHERE Product.ProductID=PurchaseCart.ProductID AND Customer.cartID=PurchaseCart.cartID " +
+                    "WHERE Product.productID=PurchaseCart.productID AND Customer.cartID=PurchaseCart.cartID " +
                     "ORDER BY totalPrice DESC;";
             statement.executeUpdate(orderHistory);
 
@@ -366,9 +380,9 @@ public class MySQLConnection {
             System.out.print("Enter a date (YYYY-MM-DD): ");
             String certainDate = input.next();
 
-            String productCertainDate="CREATE VIEW productCertainDate AS " +
-                    "SELECT Order.ProductID, Product.name " +
-                    " FROM Order " +
+            String productCertainDate="CREATE VIEW ProductCertainDate AS " +
+                    "SELECT Orders.productID, Product.name " +
+                    " FROM Orders " +
                     "WHERE OrderDate = ? ;";
             PreparedStatement st= conn.prepareStatement(productCertainDate);
             st.setString(1, certainDate);
@@ -380,7 +394,7 @@ public class MySQLConnection {
             System.out.print("Enter a customer's last name:");
             String userLastName = input.next();
 
-            String customerCart = "CREATE VIEW customerCart AS " +
+            String customerCart = "CREATE VIEW CustomerCart AS " +
                     "SELECT PurchaseCart.*, Customer.firstName, Customer.lastName " +
                     "FROM PurchaseCart, Customer " +
                     "WHERE PurchaseCart.CustomerID=Customer.CustomerID AND Customer.firstName= ? AND Customer.lastName= ?;";
@@ -397,29 +411,29 @@ public class MySQLConnection {
     public void displayViews() {
         try{
             Statement statement = conn.createStatement();
-            String view1="SELECT * FROM topSellingProducts " +
+            String view1="SELECT * FROM TopSelling " +
                     "LIMIT 10;";
             System.out.println("1. Display top 10 selling products:");
             ResultSet rs1 = statement.executeQuery(view1);
             printResult(rs1);
 
-            String view2="SELECT * FROM topBuyer " +
+            String view2="SELECT * FROM TopBuyer " +
                     "LIMIT 10;";
             System.out.println("2. Display top 10 buyers:");
             ResultSet rs2 = statement.executeQuery(view2);
             printResult(rs2);
 
-            String view3="SELECT * FROM orderHistory ;";
+            String view3="SELECT * FROM OrderHistory ;";
             System.out.println("3: Order History (a customer can view the total price of product in shopping cart):");
             ResultSet rs3 = statement.executeQuery(view3);
             printResult(rs3);
 
-            String view4="SELECT * FROM productCertainDate ;";
+            String view4="SELECT * FROM ProductCertainDate ;";
             System.out.println("4: Product sold on a particular date:");
             ResultSet rs4 = statement.executeQuery(view4);
             printResult(rs4);
 
-            String view5 = "SELECT * FROM customerCart;";
+            String view5 = "SELECT * FROM CustomerCart;";
             System.out.println("5: Display the customer's cart:");
             ResultSet rs5 = statement.executeQuery(view5);
             printResult(rs5);
