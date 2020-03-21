@@ -322,18 +322,6 @@ public class MySQLConnection {
     }
 
 
-//    public void createTriggers(){
-//        try{
-//            String orderDeleteTrigger = "CREATE trigger IF NOT EXISTS addOrderTrigger " +
-//                                        "AFTER DELETE ON Order " +
-//                                        "FOR EACH ROW " +
-//                                        "IF orderID IS NULL THEN " +
-//                                        "";
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     public void createTrigger(){
         try{
@@ -342,7 +330,7 @@ public class MySQLConnection {
                                          "BEGIN " +
                                          "    IF NEW.firstName <> OLD.firstName OR NEW.lastName <> OLD.lastName OR " +
                                          "       (NEW.firstName IS NULL) <> (OLD.firstName IS NULL) THEN " +
-                                         "        INSERT INTO customerChanges(, name) VALUES(NEW.id, NEW.name); " +
+                                         "        INSERT INTO customerChanges(firstName) VALUES(NEW.firstName, NEW.lastNqame); " +
                                          "    END IF; " +
                                          "END;";
         }catch (Exception e){
