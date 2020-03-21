@@ -4,7 +4,6 @@ import java.util.Scanner;
 public class MySQLConnection {
 
     private Connection conn;
-    private Statement statement = null;
 
     public MySQLConnection() {
         try {
@@ -292,22 +291,22 @@ public class MySQLConnection {
     }
     public void createViews() {
         try{
-
+            Statement statement = conn.createStatement();
             //Top selling products, output top 10
             String topSellingProducts="CREATE VIEW topSellingProducts AS " +
-                    "SELECT SUM(PurchaseCart.quantity) AS totalQuantity, Order.ProductID, Product.name" +
-                    "FROM Order, PurchaseCart, Product" +
-                    "WHERE Order.ProductID=PurchaseCart.ProductID AND Order.ProductID=Product.ID " +
+                    "SELECT SUM(PurchaseCart.quantity) AS totalQuantity, Order.ProductID, Product.name " +
+                    "FROM Order, PurchaseCart, Product " +
+                    "WHERE Order.ProductID = PurchaseCart.ProductID AND Order.ProductID = Product.ID " +
                     "GROUP BY Order.ProductID " +
                     "ORDER BY totalQuantities DESC; " ;
             statement.executeUpdate(topSellingProducts);
 
             //Top buyers
             String topBuyer="CREATE VIEW topBuyer AS " +
-                    "SELECT COUNT(Customer.OrderID) AS totalOrder, Customer.name " +
+                    "SELECT COUNT(Customer.orderID) AS totalOrder, Customer.name " +
                     "FROM Customer, Order " +
-                    "WHERE Customer.OrderID = Order.OrderID " +
-                    "GROUP BY Customer.OrderID " +
+                    "WHERE Customer.orderID = Order.orderID " +
+                    "GROUP BY Customer.orderID " +
                     "Order BY totalOrder DESC; " ;
             statement.executeUpdate(topBuyer);
 
@@ -331,7 +330,23 @@ public class MySQLConnection {
                     "WHERE OrderDate = ? ;";
             PreparedStatement st= conn.prepareStatement(productCertainDate);
             st.setString(1, certainDate);
-            statement.executeUpdate(productCertainDate);
+            st.executeUpdate(productCertainDate);
+
+            //display the shopping cart for certain customer
+            System.out.println("Enter a customer's first name:");
+            String userFirstName = input.next();
+            System.out.print("Enter a customer's last name:");
+            String userLastName = input.next();
+
+            String customerCart = "CREATE VIEW customerCart AS " +
+                    "SELECT PurchaseCart.*, Customer.firstName, Customer.lastName " +
+                    "FROM PurchaseCart, Customer " +
+                    "WHERE PurchaseCart.CustomerID=Customer.CustomerID AND Customer.firstName= ? AND Customer.lastName= ?;";
+            st = conn.prepareStatement(customerCart);
+            st.setString(1, userFirstName);
+            st.setString(2, userLastName);
+            st.executeUpdate(customerCart);
+
         }catch (SQLException e) {
             e.printStackTrace();
         }
@@ -339,6 +354,7 @@ public class MySQLConnection {
 
     public void displayViews() {
         try{
+            Statement statement = conn.createStatement();
             String view1="SELECT * FROM topSellingProducts " +
                     "LIMIT 10;";
             System.out.println("1. Display top 10 selling products:");
@@ -360,11 +376,17 @@ public class MySQLConnection {
             System.out.println("4: Product sold on a particular date:");
             ResultSet rs4 = statement.executeQuery(view4);
             printResult(rs4);
+
+            String view5 = "SELECT * FROM customerCart;";
+            System.out.println("5: Display the customer's cart:");
+            ResultSet rs5 = statement.executeQuery(view5);
+            printResult(rs5);
+
+
         }catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
 
 
     private void printResult(ResultSet rs) throws SQLException {
@@ -387,6 +409,16 @@ public class MySQLConnection {
             System.out.println("");
         }
         System.out.println("");
+    }
+
+    public void close() throws SQLException {
+        Statement statement = conn.createStatement();
+        try {
+            conn.close();
+            statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 
