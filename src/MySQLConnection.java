@@ -65,6 +65,12 @@ public class MySQLConnection {
             sql = "DROP VIEW IF EXISTS CustomerCart";
             statement.executeUpdate(sql);
 
+            sql = "DROP VIEW IF EXISTS OrderHistoryByCustomer";
+            statement.executeUpdate(sql);
+
+            sql = "DROP VIEW IF EXISTS ShoppingCartTotalPrice";
+            statement.executeUpdate(sql);
+
             // create new tables
 
             sql = "CREATE TABLE ShippingAddress ("
@@ -404,6 +410,34 @@ public class MySQLConnection {
             st.setString(2, lastName);
             st.executeUpdate();
 
+
+            // Order History (what has the customer ordered so far, for customer to review history)
+            System.out.println("Display the order history by the customer:");
+            String orderHistoryByCustomer = "CREATE VIEW OrderHistoryByCustomer AS  " +
+                    "SELECT Customer.firstName, Customer.lastName, Orders.orderDate, Product.name " +
+                    "FROM Product, Customer, OrderHistory, Orders " +
+                    "WHERE Customer.firstName = ? AND Customer.lastName = ? " +
+                    "AND OrderHistory.orderID = Orders.orderID AND OrderHistory.customerID = Customer.customerID " +
+                    "AND Orders.productID = Product.productID;";
+            st = conn.prepareStatement(orderHistoryByCustomer);
+            st.setString(1, firstName);
+            st.setString(2, lastName);
+            st.executeUpdate();
+
+            // Shopping cart total price by a certain customer (a customer can view the total price of product in shopping cart, for check out purpose)
+            System.out.println("Display the shopping cart total price by the customer:");
+            String shoppingCartTotalPrice = "CREATE VIEW ShoppingCartTotalPrice AS " +
+                    "SELECT SUM(PurchaseCart.quantity * Product.price) AS cartTotalPrice, Customer.firstName, Customer.lastName, PurchaseCart.cartID " +
+                    "FROM Customer, PurchaseCart, Product " +
+                    "WHERE Customer.firstName = ? AND Customer.lastName = ? " +
+                    "AND PurchaseCart.cartID = Customer.cartID AND Product.productID = PurchaseCart.productID " +
+                    "GROUP BY PurchaseCart.cartID;";
+            st = conn.prepareStatement(shoppingCartTotalPrice);
+            st.setString(1, firstName);
+            st.setString(2, lastName);
+            st.executeUpdate();
+
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -438,6 +472,16 @@ public class MySQLConnection {
             System.out.println("5: Display the customer's cart:");
             ResultSet rs5 = statement.executeQuery(view5);
             printResult(rs5);
+
+            String view6 = "SELECT * FROM OrderHistoryByCustomer;";
+            System.out.println("6: Display the customer's order history");
+            ResultSet rs6 = statement.executeQuery(view6);
+            printResult(rs6);
+
+            String view7 = "SELECT * FROM ShoppingCartTotalPrice;";
+            System.out.println("7: Display the total price of the shopping cart by a certain customer:");
+            ResultSet rs7 = statement.executeQuery(view7);
+            printResult(rs7);
 
 
         } catch (SQLException e) {
