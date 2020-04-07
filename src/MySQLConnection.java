@@ -489,6 +489,28 @@ public class MySQLConnection {
         }
     }
 
+    public void getMostSoldProduct() {
+        if (conn == null) {
+            System.err.println("DataBase connection failed");
+        }
+        try {
+            Statement statement = conn.createStatement();
+            
+            String sql = "SELECT MAX(sum) FROM (SELECT ProductID, SUM(quantity) sum FROM Orders GROUP BY ProductID) T";
+            ResultSet rs = statement.executeQuery(sql);
+            rs.next();
+            int maxSoldNum = rs.getInt(1);
+            System.out.println("\n Most popular product sold " +  maxSoldNum + " units, product details:");
+            
+            sql = "SELECT * FROM Product WHERE ProductID IN (SELECT ProductID FROM (SELECT ProductID, SUM(quantity) sum FROM Orders GROUP BY ProductID) T WHERE sum = " 
+                + maxSoldNum + ")";
+            rs = statement.executeQuery(sql);
+            printResult(rs);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void printResult(ResultSet rs) throws SQLException {
         ResultSetMetaData metaData = rs.getMetaData();

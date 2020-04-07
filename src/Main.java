@@ -9,6 +9,7 @@ public class Main {
         MySQLConnection sql_conn = new MySQLConnection();
         sql_conn.createTables();
         sql_conn.populateData();
+        sql_conn.getMostSoldProduct();
         sql_conn.createViews();
         sql_conn.displayViews();
         sql_conn.close();
